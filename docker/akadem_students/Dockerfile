@@ -42,7 +42,6 @@ FROM base as base_with_node
 
 ARG NODE_LTS_VERSION=10
 ARG NPM_VERSION=6.13.0
-ARG ANGULAR_CLI_VERSION=8.3.18
 
 ENV NG_CLI_ANALYTICS=false
 
@@ -53,21 +52,22 @@ RUN curl -sL https://deb.nodesource.com/setup_${NODE_LTS_VERSION}.x | bash -
 RUN apt-get install -y \
     nodejs
 RUN npm install -g npm@${NPM_VERSION}
-RUN npm install -g @angular/cli@${ANGULAR_CLI_VERSION}
 # ______________________________________________________________________________________________________________________
 
 FROM base_with_node as development
 
-RUN apt-get update
-RUN apt-get install -y \
-    build-essential \
-    git \
-    libmagickwand-dev
+# https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=863199#23
+RUN mkdir -p /usr/share/man/man1
+
+RUN curl -sS -o - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+ && echo "deb [arch=$(dpkg --print-architecture)]  http://dl.google.com/linux/chrome/deb/ stable main" >> \
+    /etc/apt/sources.list.d/google-chrome.list
 
 RUN apt-get update \
  && apt-get install -y \
     build-essential \
     git \
+    google-chrome-stable \
     libmagickwand-dev \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
